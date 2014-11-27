@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>紗刻</title>
+<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js'></script>
+</head>
+<body>
+<textarea id="input" rows=24 cols=80></textarea>
+<input type="submit" value="合體！！" onclick="combine();">
+<div id="res"></div>
+<script>
+var data = [
+/*
+	'P', 
+	'艾佩爾', 
+	'痕之刻', 
+	'凱亞斯', 
+*/
+];
+var div = $('#res');
+var input = $('#input');
+function recurs2 (depth)
+{
+	if (depth == s.length)
+	{
+		var res = $('<div class="row"></div>');
+		var str = s2.join('');
+		res.text(str);
+		div.append(res);
+		return;
+	}
+	for (var i=0; i<ck.length; i++)
+	{
+		if (!t2[i] && (!i || ck[i] != ck[i-1] || t2[i-1]))
+		{
+			t2[i] = true;
+			s2[depth] = ck[i];
+			recurs2(depth+1);
+			t2[i] = false;
+		}
+	}
+}
+function recurs (depth)
+{
+	if (depth == data.length)
+	{
+		ck = s.slice().sort();
+		if (!tt[ck])
+		{
+			tt[ck] = true;
+			recurs2(0);
+		}
+		return;
+	}
+	var ss = data[depth];
+	for (var i=0; i<ss.length; i++)
+	{
+		s[depth] = ss[i];
+		recurs(depth+1);
+	}
+}
+function combine ()
+{
+	var val = input.val();
+	temp = val.split('\n');
+	data = [];
+	for (var i=0; i<temp.length; i++)
+	{
+		var fs = temp[i].replace(/^\s+|\s+$/g, '');
+		if (fs == '')
+		{
+			continue;
+		}
+		data.push(fs);
+	}
+	div.empty();
+	tt = {};
+	s = [];
+	s2 = [];
+	t2 = {};
+	recurs(0);
+}
+/*
+P 
+艾佩爾
+痕之刻
+凱亞斯
+*/
+</script>
+</body>
+</html>

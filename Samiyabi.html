@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>紗雅 - RPG公會串分析用使魔</title>
+<!-- script list -->
+<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js'></script>
+<script>
+var inited = false;
+var content_textarea, result_div;
+
+function init()
+{
+	content_textarea = $('#content');
+	limit_field = $('#limit');
+	result_div = $('#result');
+	inited = true;
+}
+
+function analyze()
+{
+	if (!inited)
+	{
+		init();
+	}
+	result_div.empty();
+	var text = content_textarea.val();
+	var limit = parseInt(limit_field.val());
+	var post_pat = /buildMsg\(\d+,\'.+?\',\'.*?\',\'.*?\',\'<a.+?\?owner=(.+?)\".+?png\"> (.+?)<\/a>：【(.+?)】/gm;
+	var reply_pat = /buildReply\(\d+,\'(.+?)\',\'(.+?)\',\'(.+?)\',/gm;
+	var res = post_pat.exec(text);
+	if (!res)
+	{
+		result_div.text("「格式…不正確。」");
+		return;
+	}
+	if (limit == NaN || limit <= 0)
+	{
+		limit = 999;
+	}
+	// location analyze
+	var location = res[3];
+	var location_div = $('<div id="location"></div>');
+	location_div.text("場所："+location);
+	result_div.append(location_div);
+	
+	// build id/name table
+	var id_table = {};
+	var name_table = {};
+	id_table[res[1]] = res[2];
+	name_table[res[2]] = res[1];
+	
+	var south = 0;
+	var total = 1;
+	var south_times = {};
+	var total_times = {};
+	south_times[res[1]] = 0;
+	total_times[res[1]] = 1;
+	
+	while((res = reply_pat.exec(text)) && total < limit)
+	{
+		var id = res[1];
+		var name = res[2];
+		var content = res[3];
+		if (!id_table[id])
+		{
+			id_table[id] = name;
+			name_table[name] = id;
+			south_times[id] = 0;
+			total_times[id] = 0;
+		}
+		total_times[id]++;
+		total++;
+		
+		var content_pat = /^(\[.+?\]：?)*?\s*?[\(（]/gm;
+		var south_res = content_pat.exec(content);
+		if (south_res)
+		{
+			south++;
+			south_times[id]++;
+		}
+		//console.log(content);
+		//console.log(south_res);
+	}
+	var div = $('<div class="head"></div>');
+	div.text('非南方串數'+(total-south));
+	result_div.append(div);
+	var div = $('<div class="head"></div>');
+	div.text('南方'+south+'/'+total+' ('+(Math.ceil(south*1000/total)/10)+'%)');
+	result_div.append(div);
+	for (var k in id_table)
+	{
+		var div = $('<div class="player"></div>');
+		div.text(id_table[k]+'('+k+')：南方'+south_times[k]+'/'+total_times[k]+
+			' ('+(Math.ceil(south_times[k]*1000/total_times[k])/10)+'%)');
+		result_div.append(div);
+	}
+}
+</script>
+</head>
+<body>
+<a href="http://home.gamer.com.tw/creationDetail.php?sn=2644252" target="_blank">紗雅</a><br />
+主人：紗夜<br />
+主職業：使魔（串分析用）<br />
+副職業：主人的抱枕<br />
+<br />
+「…檢視原始碼，複製，貼上。完。」<br />
+<textarea cols=80 rows=12 id='content'>
+</textarea><br />
+截至#<input id='limit' type='text' value=999><br />
+<input type='submit' value='獻上祭品請求分析' onclick='javascript:analyze();'>
+<div id='result'>
+</div>
+</body>
+</html>
